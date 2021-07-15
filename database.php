@@ -11,6 +11,7 @@
 		private $parameters;
 		private $select;
 		private $get;
+		private $group;
 		private $order;
 		private $limit;
 
@@ -30,6 +31,7 @@
 			$this->where = "";
 			$this->select = "";
 			$this->get = "";
+			$this->group = "";
 			$this->order = "";
 			$this->limit = "";
 			$this->parameters = array();
@@ -66,6 +68,7 @@
 			$this->where = "";
 			$this->select = "";
 			$this->get = "";
+			$this->group = "";
 			$this->order = "";
 			$this->limit = "";
 			$this->parameters = array();
@@ -98,6 +101,7 @@
 				}
 				$this->query .= "WHERE ".$where;
 			}
+			$this->query .= " ".$this->group;
 			$this->query .= " ".$this->order;
 			$this->query .= " ".$this->limit.";";
 			$this->pre_query = $this->query;
@@ -209,8 +213,37 @@
 		}
 
 		public function orderBy($field,$order="ASC"){
-			$this->order = " ORDER BY `".$field."` {$order} ";
+
+			if( array() === $fields ){
+				$order_text = "";
+				foreach ($fields as $field => $or) {
+					if( !empty($order_text) ){
+						$order_text .= ", ";
+					}else{
+						$order_text .= " ";
+					}
+					$order_text .= "`".$field."` ". $or." ";
+				}
+				$this->order = " ORDER BY ".$order_text;
+			}else{
+				$this->order = " ORDER BY `".$field."` {$order} ";
+			}
 		}
+
+		public function groupBy($fields){
+
+			$groupBy_text = "";
+			foreach ($fields as $field) {
+				if( !empty($groupBy_text) ){
+					$groupBy_text .= ", ";
+				}else{
+					$groupBy_text .= " ";
+				}
+				$groupBy_text .= "`".$field."` ";
+			}
+			$this->groupBy = " GROUP BY ".$groupBy_text;
+		}
+
 		public function limit($start,$count=NULL){
 			if($count === NULL){
 				$this->limit = "LIMIT ".$start;
@@ -273,6 +306,7 @@
 				}
 				$this->query .= "WHERE ".$where;
 			}
+			$this->query .= " ".$this->group;
 			$this->query .= " ".$this->order;
 			$this->query .= " ".$this->limit.";";
 			$this->pre_query = $this->query;
